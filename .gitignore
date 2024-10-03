@@ -1,0 +1,5 @@
+myvenv
+data
+.env
+*.pyc
+__pycache__/
