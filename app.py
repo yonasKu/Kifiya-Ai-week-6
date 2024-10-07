@@ -36,7 +36,8 @@ except Exception as e:
 
 # Define the input data model with type constraints
 class PredictionInput(BaseModel):
-    features: conlist(float, min_items=20, max_items=20)  # Adjust min/max items based on your model
+    features: conlist(float, min_length=20, max_length=20)  # Adjust min/max items based on your model
+
 
 @app.post('/predict/logistic')
 async def predict_logistic(input: PredictionInput):
@@ -46,9 +47,11 @@ async def predict_logistic(input: PredictionInput):
         features = np.array(input.features).reshape(1, -1)
         prediction = logistic_model.predict(features)
         prediction_proba = logistic_model.predict_proba(features)
+
+        # Convert numpy objects to Python native types before returning
         return {
-            "prediction": prediction[0],
-            "probabilities": prediction_proba.tolist()
+            "prediction": int(prediction[0]),  # Convert numpy.int64 to Python int
+            "probabilities": prediction_proba.tolist()  # Convert numpy array to list
         }
     except Exception as e:
         logging.error("Error during logistic prediction: %s", e)
@@ -61,13 +64,16 @@ async def predict_rf(input: PredictionInput):
         features = np.array(input.features).reshape(1, -1)
         prediction = rf_model.predict(features)
         prediction_proba = rf_model.predict_proba(features)
+
+        # Convert numpy objects to Python native types before returning
         return {
-            "prediction": prediction[0],
-            "probabilities": prediction_proba.tolist()
+            "prediction": int(prediction[0]),  # Convert numpy.int64 to Python int
+            "probabilities": prediction_proba.tolist()  # Convert numpy array to list
         }
     except Exception as e:
         logging.error("Error during random forest prediction: %s", e)
         raise HTTPException(status_code=500, detail="Prediction error")
+
 
 if __name__ == "__main__":
     import uvicorn
